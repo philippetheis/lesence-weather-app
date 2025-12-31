@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   weather-app:
     build:
@@ -7,27 +5,17 @@ services:
       dockerfile: Dockerfile
     container_name: lesence-weather-app
     restart: unless-stopped
-    labels:
-      # Traefik labels for reverse proxy
-      - "traefik.enable=true"
-      - "traefik.http.routers.weather-app.rule=Host(`weather.lesence.local`)"
-      - "traefik.http.routers.weather-app.entrypoints=web"
-      - "traefik.http.routers.weather-app.entrypoints=websecure"
-      - "traefik.http.routers.weather-app.tls.certresolver=letsencrypt"
-      - "traefik.http.services.weather-app.loadbalancer.server.port=80"
-      # Optional: Redirect HTTP to HTTPS
-      - "traefik.http.routers.weather-app-http.rule=Host(`weather.lesence.local`)"
-      - "traefik.http.routers.weather-app-http.entrypoints=web"
-      - "traefik.http.routers.weather-app-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
     networks:
-      - traefik-network
-    # Uncomment if you want to expose directly without Traefik
-    # ports:
-    #   - "3000:80"
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.lesence-weather.rule=Host(`${DOMAIN_WEATHER}`)
+      - traefik.http.routers.lesence-weather.entrypoints=websecure
+      - traefik.http.routers.lesence-weather.tls.certresolver=le
+      - traefik.http.services.lesence-weather.loadbalancer.server.port=80
 
 networks:
-  traefik-network:
+  proxy:
     external: true
-
+    name: proxy

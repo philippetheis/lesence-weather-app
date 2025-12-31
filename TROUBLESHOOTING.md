@@ -164,3 +164,4 @@ Falls nichts hilft:
 3. Prüfe Docker Status: `docker info`
 4. Nutze Dev-Server als Alternative: `npm run dev`
 
+

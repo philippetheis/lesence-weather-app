@@ -38,3 +38,4 @@ public/
 
 Die HTML-Datei und das Webmanifest sind bereits konfiguriert. Du musst nur noch die Favicon-Bilddateien hinzufügen.
 
+
