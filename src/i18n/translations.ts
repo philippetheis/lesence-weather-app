@@ -164,6 +164,11 @@ export const translations: Translations = {
     en: 'Forecast could not be loaded',
     hu: 'Az előrejelzés nem tölthető be',
   },
+  rateLimitExceeded: {
+    de: 'API-Limit erreicht. Bitte später erneut versuchen.',
+    en: 'API rate limit exceeded. Please try again later.',
+    hu: 'API korlát elérve. Kérjük, próbálja újra később.',
+  },
   
   // Wind Directions
   north: {

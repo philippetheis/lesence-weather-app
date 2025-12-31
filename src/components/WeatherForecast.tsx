@@ -77,6 +77,9 @@ export const WeatherForecast = () => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    let timeoutId: ReturnType<typeof setTimeout>;
+    
     const fetchForecast = async () => {
       try {
         setLoading(true);
@@ -85,12 +88,24 @@ export const WeatherForecast = () => {
         // Direct API call - Open-Meteo supports CORS
         const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,windspeed_10m_max&timezone=Europe/Budapest&forecast_days=5`;
         
+        // Fallback timeout - force error after 20 seconds
+        timeoutId = setTimeout(() => {
+          if (isMounted) {
+            setError(t('forecastError') + ' - Timeout');
+            setLoading(false);
+          }
+        }, 20000);
+        
         const response = await axios.get(forecastUrl, {
-          timeout: 10000, // 10 seconds timeout
+          timeout: 15000, // 15 seconds timeout
           headers: {
             'Accept': 'application/json',
           },
         });
+
+        clearTimeout(timeoutId);
+
+        if (!isMounted) return;
 
         if (!response.data || !response.data.daily) {
           throw new Error('Invalid forecast data received');
@@ -115,31 +130,58 @@ export const WeatherForecast = () => {
           };
         });
 
-        setForecast(forecastData);
+        if (isMounted) {
+          setForecast(forecastData);
+          setLoading(false);
+        }
       } catch (err: any) {
+        clearTimeout(timeoutId);
         console.error('Error fetching forecast:', err);
+        
+        if (!isMounted) return;
+        
+        // Handle rate limit (429) - show specific message
+        if (err.response?.status === 429) {
+          const errorMessage = t('rateLimitExceeded');
+          setError(errorMessage);
+          setLoading(false);
+          return;
+        }
         
         // Provide more detailed error information
         let errorMessage = t('forecastError');
         if (err.response) {
           console.error('Response error:', err.response.status, err.response.data);
-          errorMessage = `${t('forecastError')} (${err.response.status})`;
+          if (err.response.status === 429) {
+            errorMessage = t('rateLimitExceeded');
+          } else {
+            errorMessage = `${t('forecastError')} (${err.response.status})`;
+          }
         } else if (err.request) {
           console.error('No response received:', err.request);
           errorMessage = `${t('forecastError')} - ${t('errorLoadingData')}`;
         } else if (err.code === 'ERR_NETWORK' || err.message?.includes('CORS')) {
           console.error('CORS/Network error:', err.message);
           errorMessage = `${t('forecastError')} - Network error`;
+        } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+          console.error('Timeout error:', err.message);
+          errorMessage = `${t('forecastError')} - Timeout`;
         }
         
         setError(errorMessage);
-      } finally {
         setLoading(false);
       }
     };
 
     fetchForecast();
-  }, [language, t]);
+    
+    return () => {
+      isMounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [language]); // Remove 't' from dependencies to avoid infinite loop
 
   if (loading) {
     return (
