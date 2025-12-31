@@ -17,9 +17,10 @@ export const useWeatherData = () => {
       const response = await fetchWeatherData();
       setData(response);
       setLastUpdate(new Date());
-    } catch (err) {
-      setError('Fehler beim Laden der Wetterdaten');
-      console.error(err);
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Fehler beim Laden der Wetterdaten';
+      setError(errorMessage);
+      console.error('Weather data error:', err);
     } finally {
       setLoading(false);
     }

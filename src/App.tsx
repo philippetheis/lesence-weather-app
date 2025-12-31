@@ -2,6 +2,7 @@ import { useWeatherData } from './hooks/useWeatherData';
 import { Header } from './components/Header';
 import { WeatherCard } from './components/WeatherCard';
 import { WeatherRadar } from './components/WeatherRadar';
+import { WeatherForecast } from './components/WeatherForecast';
 import { PowerCard } from './components/PowerCard';
 import { LightCard } from './components/LightCard';
 import { LoadingSpinner } from './components/LoadingSpinner';
@@ -29,16 +30,17 @@ function App() {
                   <WeatherCard data={data.data.weather} />
                 </div>
                 
-                <div className="mb-8">
+                <div className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <WeatherRadar />
-                </div>
-                
-                <div className="mb-8">
-                  <PowerCard data={data.data.power} />
+                  <WeatherForecast />
                 </div>
                 
                 <div className="mb-8">
                   <LightCard data={data.data.light} />
+                </div>
+                
+                <div className="mb-8">
+                  <PowerCard data={data.data.power} />
                 </div>
               </>
             )}

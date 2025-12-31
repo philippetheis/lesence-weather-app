@@ -23,3 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
+# Setup scripts (optional - kann auch committed werden)
+# setup-repo.sh
+
+# Favicon placeholder - remove this line once you add your favicon files
+# public/favicon/*.png
+# public/favicon/*.ico
+# public/favicon/*.svg
+

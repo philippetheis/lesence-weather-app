@@ -16,3 +16,35 @@ code {
     monospace;
 }
 
+/* Fix for RainViewer iframe controls */
+iframe[title="Wetter-Radar"] {
+  pointer-events: auto;
+  isolation: isolate;
+}
+
+/* Ensure iframe container doesn't interfere with controls */
+.relative iframe {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Hide RainViewer overlay elements that cause overlap */
+/* Note: These styles need to be injected into the iframe, which is cross-origin */
+/* The WeatherRadar component tries to inject these styles via JavaScript */
+
+/* CSS that should be injected into the RainViewer iframe (done via JS in component) */
+/* 
+  #app-icon {
+    display: none !important;
+  }
+  .map-link {
+    position: absolute !important;
+    right: 10px !important;
+    bottom: 10px !important;
+    text-align: right !important;
+  }
+*/
+

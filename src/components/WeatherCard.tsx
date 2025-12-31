@@ -8,6 +8,10 @@ interface WeatherCardProps {
 
 export const WeatherCard = ({ data }: WeatherCardProps) => {
   const { temperature_c, humidity_pct, wind_speed_ms, wind_gust_ms, wind_direction_cardinal, rain_total_mm, rain_day_mm } = data.data;
+  
+  // Convert m/s to km/h (multiply by 3.6)
+  const windSpeedKmh = (wind_speed_ms * 3.6).toFixed(1);
+  const windGustKmh = (wind_gust_ms * 3.6).toFixed(1);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-all hover:shadow-xl">
@@ -21,7 +25,7 @@ export const WeatherCard = ({ data }: WeatherCardProps) => {
           <WiThermometer className="text-4xl text-blue-500" />
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Temperatur</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">{temperature_c} °C</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">{temperature_c.toFixed(2)} °C</p>
           </div>
         </div>
 
@@ -38,10 +42,10 @@ export const WeatherCard = ({ data }: WeatherCardProps) => {
           <div className="flex-1">
             <p className="text-sm text-gray-600 dark:text-gray-400">Wind</p>
             <p className="text-xl font-bold text-gray-800 dark:text-white">
-              {wind_speed_ms} m/s
+              {windSpeedKmh} km/h <span className="text-sm font-normal text-gray-600 dark:text-gray-400">({wind_speed_ms.toFixed(1)} m/s)</span>
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Böen: {wind_gust_ms} m/s
+              Böen: {windGustKmh} km/h ({wind_gust_ms.toFixed(1)} m/s)
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
               Richtung: {getWindDirectionIcon(wind_direction_cardinal)} {wind_direction_cardinal.toUpperCase()}
