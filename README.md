@@ -49,48 +49,45 @@ Die App läuft dann auf `http://localhost:3000` (oder dem Port, den Vite zuweist
 
 ## Docker Deployment
 
+### Schnellstart (Ohne Traefik)
+
+Die einfachste Methode für lokales Deployment oder Server ohne Traefik:
+
+```bash
+# Mit der einfachen docker-compose Datei
+docker-compose -f docker-compose.simple.yml up -d
+
+# App ist dann auf http://localhost:3000 erreichbar
+```
+
 ### Mit Docker Compose (Traefik)
 
-1. **Docker Image bauen:**
+Für Production mit Traefik Reverse Proxy:
+
+1. **Traefik-Netzwerk erstellen:**
+   ```bash
+   docker network create traefik-network
+   ```
+
+2. **docker-compose.yml anpassen:**
+   - Hostname in `traefik.http.routers.weather-app.rule` anpassen
+   - Entrypoints an deine Traefik-Konfiguration anpassen
+   - Cert Resolver anpassen (z.B. `letsencrypt`)
+
+3. **Docker Image bauen:**
    ```bash
    docker-compose build
    ```
 
-2. **Container starten:**
+4. **Container starten:**
    ```bash
    docker-compose up -d
    ```
 
-3. **Container stoppen:**
+5. **Container stoppen:**
    ```bash
    docker-compose down
    ```
-
-### Traefik Konfiguration
-
-Die `docker-compose.yml` enthält bereits Traefik Labels für den Reverse Proxy. 
-
-**Wichtig:** Passe die folgenden Labels in `docker-compose.yml` an deine Umgebung an:
-
-- `traefik.http.routers.weather-app.rule`: Hostname (z.B. `weather.lesence.local`)
-- `traefik.http.routers.weather-app.entrypoints`: Deine Traefik Entrypoints
-- `traefik.http.routers.weather-app.tls.certresolver`: Dein Cert Resolver (z.B. `letsencrypt`)
-
-**Netzwerk:** Stelle sicher, dass das `traefik-network` existiert:
-```bash
-docker network create traefik-network
-```
-
-### Ohne Traefik (direkter Port)
-
-Falls du Traefik nicht verwendest, kannst du die Port-Mapping Zeilen in `docker-compose.yml` auskommentieren:
-
-```yaml
-ports:
-  - "3000:80"
-```
-
-Dann ist die App direkt auf `http://localhost:3000` erreichbar.
 
 ### Docker Build manuell
 
@@ -101,6 +98,10 @@ docker build -t lesence-weather-app .
 # Container starten
 docker run -d -p 3000:80 --name weather-app lesence-weather-app
 ```
+
+## 🚀 Weitere Deployment-Optionen
+
+Für detaillierte Anleitungen zu verschiedenen Deployment-Methoden (Vercel, Netlify, Railway, VPS, etc.) siehe **[DEPLOYMENT.md](./DEPLOYMENT.md)**
 
 ## API Konfiguration
 
