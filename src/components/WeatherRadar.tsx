@@ -1,6 +1,9 @@
+import { useLanguage } from '../hooks/useLanguage';
+
 export const WeatherRadar = () => {
   const lat = 46.855298;
   const lon = 17.347733;
+  const { t } = useLanguage();
   
   // Using Windy.com as alternative to RainViewer
   // Windy offers better control and cleaner embed options
@@ -11,7 +14,7 @@ export const WeatherRadar = () => {
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-all hover:shadow-xl h-full">
       <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
         <span className="text-3xl">🌦️</span>
-        Wetter-Radar
+        {t('weatherRadar')}
       </h2>
       <div className="relative w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-900" style={{ paddingBottom: '75%', minHeight: '300px' }}>
         <iframe
@@ -26,13 +29,13 @@ export const WeatherRadar = () => {
             border: 'none',
             zIndex: 1
           }}
-          title="Wetter-Radar"
+          title={t('weatherRadar')}
           allowFullScreen
           scrolling="no"
         />
       </div>
       <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-        Standort: {lat}, {lon} | Powered by <a href="https://www.windy.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Windy.com</a>
+        {t('location')}: {lat}, {lon} | {t('poweredBy')} <a href="https://www.windy.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Windy.com</a>
       </p>
     </div>
   );

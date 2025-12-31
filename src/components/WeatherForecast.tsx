@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { WiRain, WiStrongWind } from 'react-icons/wi';
+import { useLanguage } from '../hooks/useLanguage';
 import axios from 'axios';
 
 interface ForecastDay {
@@ -17,86 +18,45 @@ export const WeatherForecast = () => {
   const [forecast, setForecast] = useState<ForecastDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t, language } = useLanguage();
 
   // Lesencetomaj, Ungarn Koordinaten
   const lat = 46.855298;
   const lon = 17.347733;
 
-  useEffect(() => {
-    const fetchForecast = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Using OpenWeatherMap API (free tier)
-        // Note: You'll need to add your API key to use this
-        // For now, using a demo approach with Open-Meteo (no API key needed)
-        const response = await axios.get(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,windspeed_10m_max&timezone=Europe/Budapest&forecast_days=5`
-        );
-
-        const data = response.data;
-        const forecastData: ForecastDay[] = data.daily.time.map((date: string, index: number) => {
-          const weatherCode = data.daily.weathercode[index];
-          const description = getWeatherDescription(weatherCode);
-          const icon = getWeatherIcon(weatherCode);
-
-          return {
-            date: new Date(date).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }),
-            temp_max: Math.round(data.daily.temperature_2m_max[index]),
-            temp_min: Math.round(data.daily.temperature_2m_min[index]),
-            description,
-            icon,
-            humidity: 0, // Open-Meteo doesn't provide daily humidity in free tier
-            wind_speed: Math.round(data.daily.windspeed_10m_max[index] * 3.6), // Convert to km/h
-            rain: data.daily.precipitation_sum[index] || 0,
-          };
-        });
-
-        setForecast(forecastData);
-      } catch (err: any) {
-        console.error('Error fetching forecast:', err);
-        setError('Forecast konnte nicht geladen werden');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchForecast();
-  }, []);
-
   const getWeatherDescription = (code: number): string => {
-    const codes: Record<number, string> = {
-      0: 'Klar',
-      1: 'Überwiegend klar',
-      2: 'Teilweise bewölkt',
-      3: 'Bedeckt',
-      45: 'Nebel',
-      48: 'Gefrierender Nebel',
-      51: 'Leichter Nieselregen',
-      53: 'Mäßiger Nieselregen',
-      55: 'Starker Nieselregen',
-      56: 'Leichter gefrierender Nieselregen',
-      57: 'Starker gefrierender Nieselregen',
-      61: 'Leichter Regen',
-      63: 'Mäßiger Regen',
-      65: 'Starker Regen',
-      66: 'Leichter gefrierender Regen',
-      67: 'Starker gefrierender Regen',
-      71: 'Leichter Schneefall',
-      73: 'Mäßiger Schneefall',
-      75: 'Starker Schneefall',
-      77: 'Schneekörner',
-      80: 'Leichte Regenschauer',
-      81: 'Mäßige Regenschauer',
-      82: 'Starke Regenschauer',
-      85: 'Leichte Schneeschauer',
-      86: 'Starke Schneeschauer',
-      95: 'Gewitter',
-      96: 'Gewitter mit Hagel',
-      99: 'Gewitter mit starkem Hagel',
+    const codeMap: Record<number, string> = {
+      0: 'clear',
+      1: 'mainlyClear',
+      2: 'partlyCloudy',
+      3: 'overcast',
+      45: 'fog',
+      48: 'freezingFog',
+      51: 'lightDrizzle',
+      53: 'moderateDrizzle',
+      55: 'heavyDrizzle',
+      56: 'lightDrizzle',
+      57: 'heavyDrizzle',
+      61: 'lightRain',
+      63: 'moderateRain',
+      65: 'heavyRain',
+      66: 'lightRain',
+      67: 'heavyRain',
+      71: 'lightSnow',
+      73: 'moderateSnow',
+      75: 'heavySnow',
+      77: 'lightSnow',
+      80: 'lightShowers',
+      81: 'moderateShowers',
+      82: 'heavyShowers',
+      85: 'lightSnow',
+      86: 'heavySnow',
+      95: 'thunderstorm',
+      96: 'thunderstorm',
+      99: 'thunderstorm',
     };
-    return codes[code] || 'Unbekannt';
+    const key = codeMap[code] || 'unknown';
+    return t(key);
   };
 
   const getWeatherIcon = (code: number): string => {
@@ -110,12 +70,59 @@ export const WeatherForecast = () => {
     return '☁️';
   };
 
+  const getLocale = (): string => {
+    if (language === 'hu') return 'hu-HU';
+    if (language === 'en') return 'en-US';
+    return 'de-DE';
+  };
+
+  useEffect(() => {
+    const fetchForecast = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await axios.get(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,windspeed_10m_max&timezone=Europe/Budapest&forecast_days=5`
+        );
+
+        const data = response.data;
+        const locale = getLocale();
+        const forecastData: ForecastDay[] = data.daily.time.map((date: string, index: number) => {
+          const weatherCode = data.daily.weathercode[index];
+          const description = getWeatherDescription(weatherCode);
+          const icon = getWeatherIcon(weatherCode);
+
+          return {
+            date: new Date(date).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' }),
+            temp_max: Math.round(data.daily.temperature_2m_max[index]),
+            temp_min: Math.round(data.daily.temperature_2m_min[index]),
+            description,
+            icon,
+            humidity: 0,
+            wind_speed: Math.round(data.daily.windspeed_10m_max[index] * 3.6),
+            rain: data.daily.precipitation_sum[index] || 0,
+          };
+        });
+
+        setForecast(forecastData);
+      } catch (err: any) {
+        console.error('Error fetching forecast:', err);
+        setError(t('forecastError'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchForecast();
+  }, [language, t]);
+
   if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-3xl">📅</span>
-          Wettervorhersage
+          {t('weatherForecast')}
         </h2>
         <div className="flex justify-center items-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
@@ -129,7 +136,7 @@ export const WeatherForecast = () => {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-3xl">📅</span>
-          Wettervorhersage
+          {t('weatherForecast')}
         </h2>
         <p className="text-red-600 dark:text-red-400">{error}</p>
       </div>
@@ -140,9 +147,9 @@ export const WeatherForecast = () => {
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-all hover:shadow-xl h-full">
       <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
         <span className="text-3xl">📅</span>
-        Wettervorhersage
+        {t('weatherForecast')}
       </h2>
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Lesencetomaj, Ungarn</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{t('lesencetomaj')}</p>
       
       <div className="space-y-3">
         {forecast.map((day, index) => (
@@ -185,4 +192,3 @@ export const WeatherForecast = () => {
     </div>
   );
 };
-

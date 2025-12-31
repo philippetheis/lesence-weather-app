@@ -1,4 +1,5 @@
 import { useWeatherData } from './hooks/useWeatherData';
+import { useLanguage } from './hooks/useLanguage';
 import { Header } from './components/Header';
 import { WeatherCard } from './components/WeatherCard';
 import { WeatherRadar } from './components/WeatherRadar';
@@ -7,9 +8,15 @@ import { PowerCard } from './components/PowerCard';
 import { LightCard } from './components/LightCard';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorMessage } from './components/ErrorMessage';
+import { useEffect } from 'react';
 
 function App() {
   const { data, loading, error, lastUpdate, refresh } = useWeatherData();
+  const { t } = useLanguage();
+
+  useEffect(() => {
+    document.title = t('appTitle');
+  }, [t]);
 
   if (loading && !data) {
     return <LoadingSpinner />;
@@ -21,7 +28,7 @@ function App() {
       
       <main className="container mx-auto px-4 py-8">
         {error && !data ? (
-          <ErrorMessage message={error} onRetry={refresh} />
+          <ErrorMessage message={t('errorLoadingData')} onRetry={refresh} />
         ) : (
           <>
             {data && (
