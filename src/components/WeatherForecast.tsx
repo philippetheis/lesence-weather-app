@@ -82,9 +82,19 @@ export const WeatherForecast = () => {
         setLoading(true);
         setError(null);
         
-        const response = await axios.get(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,windspeed_10m_max&timezone=Europe/Budapest&forecast_days=5`
-        );
+        // Use proxy endpoint to avoid CORS issues
+        const forecastUrl = `/forecast-api/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,windspeed_10m_max&timezone=Europe/Budapest&forecast_days=5`;
+        
+        const response = await axios.get(forecastUrl, {
+          timeout: 10000, // 10 seconds timeout
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+
+        if (!response.data || !response.data.daily) {
+          throw new Error('Invalid forecast data received');
+        }
 
         const data = response.data;
         const locale = getLocale();
@@ -108,7 +118,21 @@ export const WeatherForecast = () => {
         setForecast(forecastData);
       } catch (err: any) {
         console.error('Error fetching forecast:', err);
-        setError(t('forecastError'));
+        
+        // Provide more detailed error information
+        let errorMessage = t('forecastError');
+        if (err.response) {
+          console.error('Response error:', err.response.status, err.response.data);
+          errorMessage = `${t('forecastError')} (${err.response.status})`;
+        } else if (err.request) {
+          console.error('No response received:', err.request);
+          errorMessage = `${t('forecastError')} - ${t('errorLoadingData')}`;
+        } else if (err.code === 'ERR_NETWORK' || err.message?.includes('CORS')) {
+          console.error('CORS/Network error:', err.message);
+          errorMessage = `${t('forecastError')} - Network error`;
+        }
+        
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
