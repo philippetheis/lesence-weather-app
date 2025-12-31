@@ -82,8 +82,8 @@ export const WeatherForecast = () => {
         setLoading(true);
         setError(null);
         
-        // Use proxy endpoint to avoid CORS issues
-        const forecastUrl = `/forecast-api/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,windspeed_10m_max&timezone=Europe/Budapest&forecast_days=5`;
+        // Direct API call - Open-Meteo supports CORS
+        const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,windspeed_10m_max&timezone=Europe/Budapest&forecast_days=5`;
         
         const response = await axios.get(forecastUrl, {
           timeout: 10000, // 10 seconds timeout
